@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "202442075141",
+    "project_id": "unicafefoodorder",
+    "storage_bucket": "unicafefoodorder.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:202442075141:android:759c33a239b8dbc193806c",
+        "android_client_info": {
+          "package_name": "com.example.hellodekal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4pIAOAdEXumT5wrFQbWBfTD0cuhhk-9Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
