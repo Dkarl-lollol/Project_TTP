@@ -23,7 +23,8 @@ class CartPage extends StatelessWidget {
           foregroundColor: Theme.of(context).colorScheme.inversePrimary,
           actions: [
             // clear cart button
-            IconButton(onPressed: () {
+            IconButton(
+              onPressed: () {
               showDialog(
                 context: context, 
                 builder: (context) => AlertDialog(

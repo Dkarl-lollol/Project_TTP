@@ -20,12 +20,12 @@ Food({
 
 // food categories
 enum FoodCategory{
-  v1cafe,
-  v2cafe,
-  v3cafe,
-  v4cafe,
-  v5cafe,
-  v6cafe,
+  v1,
+  v2,
+  v3,
+  v4,
+  v5,
+  v6,
 }
 
 // food addons

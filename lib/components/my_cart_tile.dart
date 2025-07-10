@@ -44,7 +44,7 @@ class MyCartTile extends StatelessWidget {
               // food name
               Text(cartItem.food.name),
               
-              // food price
+              // food price 1.43 just in case prob
                   Text(
                     '\$' + cartItem.food.price.toString(),
                     style: TextStyle(color: Theme.of(context).colorScheme.primary),
@@ -87,7 +87,7 @@ class MyCartTile extends StatelessWidget {
                   Text(addon.name),
               
                   // addon price
-                  Text(' (\$${addon.price.toString})'),
+                  Text(' (\$${addon.price})'),
                  ],
                         ), 
                         shape: StadiumBorder(

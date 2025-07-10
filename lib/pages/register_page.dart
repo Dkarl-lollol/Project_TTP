@@ -66,11 +66,20 @@ class  _RegisterPageState extends State<RegisterPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         //logo
-        Icon(
-          Icons.lock_open_rounded,
+        /*
+       Icon(
+         Icons.lock_open_rounded,
           size: 100,
           color: Theme.of(context).colorScheme.inversePrimary,
           ),
+          */
+
+          Image.asset(
+        'lib/images/utklogo/logocafe.jpg',
+        width: 100,
+        height: 100,
+        fit: BoxFit.contain,
+      ),
 
         const SizedBox(height: 25),
         //message, app slogan

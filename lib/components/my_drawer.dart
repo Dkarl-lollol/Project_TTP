@@ -8,8 +8,8 @@ class MyDrawer extends StatelessWidget {
   const MyDrawer({super.key});
 
   void logout() {
-    final _authService = AuthService();
-    _authService.signOut();
+    final authService = AuthService();
+    authService.signOut();
   }
 
   @override
@@ -61,7 +61,11 @@ class MyDrawer extends StatelessWidget {
             MyDrawerTile(
             text: "L O G O U T", 
             icon: Icons.logout, 
-            onTap: (){},
+            onTap: (){
+            logout();
+            Navigator.pop(context); // Close drawer
+            Navigator.pushReplacementNamed(context, '/login'); // Or your login route
+          },
             ),
 
             const SizedBox(height: 25),

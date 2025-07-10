@@ -41,7 +41,7 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'SECRET_REMOVED',
+    apiKey: 'Secret',
     appId: '1:202442075141:web:38119b3370b08fe693806c',
     messagingSenderId: '202442075141',
     projectId: 'unicafefoodorder',
@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'SECRET_REMOVED-9Y',
+    apiKey: 'Secret',
     appId: '1:202442075141:android:759c33a239b8dbc193806c',
     messagingSenderId: '202442075141',
     projectId: 'unicafefoodorder',
@@ -59,7 +59,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'SECRET_REMOVED',
+    apiKey: 'Secret',
     appId: '1:202442075141:ios:0fc9aaa7b031a3d893806c',
     messagingSenderId: '202442075141',
     projectId: 'unicafefoodorder',
@@ -68,7 +68,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'SECRET_REMOVED',
+    apiKey: 'Secret',
     appId: '1:202442075141:ios:0fc9aaa7b031a3d893806c',
     messagingSenderId: '202442075141',
     projectId: 'unicafefoodorder',
@@ -77,7 +77,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'SECRET_REMOVED',
+    apiKey: 'Secret',
     appId: '1:202442075141:web:37cfcd5af427158d93806c',
     messagingSenderId: '202442075141',
     projectId: 'unicafefoodorder',
