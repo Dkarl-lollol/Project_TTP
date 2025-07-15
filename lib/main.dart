@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:hellodekal/pages/initial_page.dart';
 import 'package:hellodekal/services/auth/auth_gate.dart';
 import 'package:hellodekal/firebase_options.dart';
 import 'package:hellodekal/models/restaurant.dart';
@@ -8,7 +9,20 @@ import 'package:provider/provider.dart';
 
 void main()async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  //await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    if (e is FirebaseException && e.code == 'duplicate-app') {
+      // Firebase already initialized, continue normally
+      print('Firebase already initialized');
+    } else {
+      // Re-throw other errors
+      rethrow;
+    }
+  }
 
   runApp(
    MultiProvider(providers: [
@@ -31,7 +45,7 @@ class MyApp extends StatelessWidget{
   Widget build(BuildContext context){
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const AuthGate(),
+      home: const InitialPage(),
       theme: Provider.of<ThemeProvider>(context).themeData,
     ); //MaterialApp
   }

@@ -10,7 +10,6 @@ import 'package:hellodekal/models/restaurant.dart';
 import 'package:hellodekal/pages/food_page.dart';
 import 'package:provider/provider.dart';
 
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -18,16 +17,13 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin{
-
-  //tabController
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = 
-    TabController(length: FoodCategory.values.length, vsync: this);
+    _tabController = TabController(length: FoodCategory.values.length, vsync: this);
   }
 
   @override
@@ -36,38 +32,29 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     super.dispose();
   }
 
-  // sort out and return a list of food items that that belong to a specific category
-  // minute 40
-
-  List<Food> _filterMenuByCategory(FoodCategory category, List<Food> fullMenu){
+  List<Food> _filterMenuByCategory(FoodCategory category, List<Food> fullMenu) {
     return fullMenu.where((food) => food.category == category).toList();
   }
 
-  //return list of foods in fiven category
-  List<Widget> getFoodInThisCategory(List<Food> fullMenu){
-    return FoodCategory.values.map((category){
-
-      // get category menu
+  List<Widget> getFoodInThisCategory(List<Food> fullMenu) {
+    return FoodCategory.values.map((category) {
       List<Food> categoryMenu = _filterMenuByCategory(category, fullMenu);
 
       return ListView.builder(
         itemCount: categoryMenu.length,
         physics: const NeverScrollableScrollPhysics(),
         padding: EdgeInsets.zero,
-        itemBuilder: (context, index){
-          //get individual food
+        itemBuilder: (context, index) {
           final food = categoryMenu[index];
-
-          //return food tile UI
           return FoodTile(
             food: food,
-            onTap:() => Navigator.push(
-              context, 
+            onTap: () => Navigator.push(
+              context,
               MaterialPageRoute(
-                builder:(context) => FoodPage(food: food),
-                ),
+                builder: (context) => FoodPage(food: food),
               ),
-            );
+            ),
+          );
         },
       );
     }).toList();
@@ -75,9 +62,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
-
-      drawer: MyDrawer(),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F6F6),
+      drawer: const MyDrawer(),
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           MySliverAppBar(
@@ -85,15 +72,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                // my current location
-                Divider(indent: 25,endIndent: 25, color: Theme.of(context).colorScheme.secondary,
-                ), //minit ke 25
-
-                // my current location
-              const  MyCurrentLocation(),
-
-                // description box
-              const MyDescriptionBox(),
+                const Divider(
+                  indent: 25,
+                  endIndent: 25,
+                  color: Colors.grey,
+                ),
+                const MyCurrentLocation(),
+                const MyDescriptionBox(),
               ],
             ),
           ),
@@ -102,8 +87,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           builder: (context, restaurant, child) => TabBarView(
             controller: _tabController,
             children: getFoodInThisCategory(restaurant.menu),
-            ),
-        ), //Consumer
+          ),
+        ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: const Color(0xFF002B6C),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white70,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: "Browse"),
+          BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: "Orders"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+        ],
       ),
     );
   }

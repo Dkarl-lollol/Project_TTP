@@ -63,7 +63,7 @@ class DefaultFirebaseOptions {
     appId: '1:202442075141:ios:0fc9aaa7b031a3d893806c',
     messagingSenderId: '202442075141',
     projectId: 'unicafefoodorder',
-    storageBucket: 'unicafefoodorder.firebasestorage.app',
+    storageBucket: 'unicafeAIzaSyApeIJUHFSGZR5Zs6FQCAcflfjcTGcMVOwfoodorder.firebasestorage.app',
     iosBundleId: 'com.example.hellodekal',
   );
 

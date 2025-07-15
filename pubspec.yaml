@@ -72,7 +72,8 @@ flutter:
     - lib/images/v4/
     - lib/images/v5/
     - lib/images/v6/
-    - lib/images/utklogo/
+    - lib/images/logo/
+    - lib/images/bg/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

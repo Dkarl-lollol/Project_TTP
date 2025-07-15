@@ -60,99 +60,72 @@ class  _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context){
     return Scaffold(
-    backgroundColor: Theme.of(context).colorScheme.surface,
-    body: Center(
-      child: Column(
+  backgroundColor: const Color(0xFF002B6C), // Dark blue background
+  body: Center(
+    child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        //logo
-        /*
-       Icon(
-         Icons.lock_open_rounded,
-          size: 100,
-          color: Theme.of(context).colorScheme.inversePrimary,
-          ),
-          */
-
-          Image.asset(
-        'lib/images/utklogo/logocafe.jpg',
-        width: 100,
-        height: 100,
-        fit: BoxFit.contain,
-      ),
-
+        Image.asset(
+          'lib/images/logo/logocafe.jpg',
+          width: 100,
+          height: 100,
+          fit: BoxFit.contain,
+        ),
         const SizedBox(height: 25),
-        //message, app slogan
         Text(
           "Let's create an account",
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
-            color: Theme.of(context).colorScheme.inversePrimary
+            color: Colors.white,
           ),
         ),
-
         const SizedBox(height: 25),
-      
-        //email textfield
         MyTextField(
-          controller: emailController, 
-          hintText: "Email", 
+          controller: emailController,
+          hintText: "Email",
           obscureText: false,
-          ),
-
+        ),
         const SizedBox(height: 10),
-
-        //password textfield
-          MyTextField(
-          controller: passwordController, 
-          hintText: "Password", 
+        MyTextField(
+          controller: passwordController,
+          hintText: "Password",
           obscureText: true,
-          ),
-
-          const SizedBox(height: 10),
-
-        // confirm password textfield
-          MyTextField(
-          controller: confirmPasswordController, 
-          hintText: "Reconfirm Password", 
+        ),
+        const SizedBox(height: 10),
+        MyTextField(
+          controller: confirmPasswordController,
+          hintText: "Reconfirm Password",
           obscureText: true,
-          ),
-
+        ),
         const SizedBox(height: 25),
-
-
-        //sign up button
         MyButton(
           text: "Sign Up",
-         onTap: register,
+          onTap: register,
         ),
-
         const SizedBox(height: 25),
-
-        //already have an account? Login here
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              "Already have an account?", 
-              style: TextStyle(
-              color:Theme.of(context).colorScheme.inversePrimary),
+            const Text(
+              "Already have an account?",
+              style: TextStyle(color: Colors.white),
             ),
-              const SizedBox(width: 4),
-              GestureDetector(
-                onTap: widget.onTap,
-                child: Text(
-                  "Login now",
-                  style: TextStyle(
-                  color:Theme.of(context).colorScheme.inversePrimary,
+            const SizedBox(width: 4),
+            GestureDetector(
+              onTap: widget.onTap,
+              child: const Text(
+                "Login now",
+                style: TextStyle(
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  ),
-                            ),
+                ),
               ),
+            ),
           ],
-        )
+        ),
       ],
-     ),)
-    );
+    ),
+  ),
+);
   }
 }
