@@ -20,26 +20,32 @@ class _CartPageState extends State<CartPage> {
     return Consumer<Restaurant>(
       builder: (context, restaurant, child) {
         final userCart = restaurant.cart;
-
-// Inside Consumer<Restaurant> builder
-final orderTotal = restaurant.getTotalPrice;
-//final deliveryFee = restaurant.deliveryFee;
-//final tax = restaurant.tax;
-//final discount = restaurant.discount;
-//final subtotal = restaurant.subtotal;
+        final orderTotal = restaurant.getTotalPrice();
+        
+        // Calculate totals
+        final deliveryFee = isDelivery ? 5.00 : 0.00;
+        final feesAndTaxes = 1.50;
+        final discount = 2.00;
+        final subtotal = orderTotal + deliveryFee + feesAndTaxes - discount;
 
         return Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
             backgroundColor: Colors.white,
             elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () => Navigator.pop(context),
+            ),
             title: ToggleButtons(
               isSelected: [isDelivery, !isDelivery],
               onPressed: (index) => setState(() => isDelivery = index == 0),
               borderRadius: BorderRadius.circular(24),
-              fillColor: const Color(0xFF002B6C),
+              fillColor: const Color(0xFF002D72), // ✅ Updated to your blue
               selectedColor: Colors.white,
               color: Colors.black,
+              borderColor: const Color(0xFF002D72), // ✅ Updated border color
+              selectedBorderColor: const Color(0xFF002D72), // ✅ Updated selected border
               constraints: const BoxConstraints(minWidth: 100, minHeight: 36),
               children: const [Text("Delivery"), Text("Pickup")],
             ),
@@ -51,16 +57,25 @@ final orderTotal = restaurant.getTotalPrice;
                     context: context,
                     builder: (context) => AlertDialog(
                       title: const Text("Clear cart?"),
+                      content: const Text("Are you sure you want to remove all items from your cart?"),
                       actions: [
                         TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text("Cancel")),
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(
+                            "Cancel",
+                            style: TextStyle(color: Colors.grey.shade600),
+                          ),
+                        ),
                         TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              restaurant.clearCart();
-                            },
-                            child: const Text("Yes")),
+                          onPressed: () {
+                            Navigator.pop(context);
+                            restaurant.clearCart();
+                          },
+                          child: const Text(
+                            "Yes",
+                            style: TextStyle(color: Color(0xFF002D72)), // ✅ Blue color
+                          ),
+                        ),
                       ],
                     ),
                   );
@@ -75,7 +90,35 @@ final orderTotal = restaurant.getTotalPrice;
                 // Cart Items
                 Expanded(
                   child: userCart.isEmpty
-                      ? const Center(child: Text("Cart is empty..."))
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.shopping_cart_outlined,
+                                size: 80,
+                                color: Colors.grey.shade400,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                "Your cart is empty",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                "Add some delicious items to get started!",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
                       : ListView.builder(
                           itemCount: userCart.length,
                           itemBuilder: (context, index) {
@@ -84,38 +127,54 @@ final orderTotal = restaurant.getTotalPrice;
                           },
                         ),
                 ),
-                const SizedBox(height: 20),
 
-                // Pricing Breakdown
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    priceRow("Order", "RM${orderTotal().toStringAsFixed(2)}"),
-                    priceRow("Delivery fee", "RM${5.00.toStringAsFixed(2)}"), // hardcoded
-                    priceRow("Fees & Taxes", "RM${1.50.toStringAsFixed(2)}"), // hardcoded
-                    priceRow("Discount", "-RM${2.00.toStringAsFixed(2)}", color: Colors.orange), // hardcoded
-                    const Divider(),
-                    priceRow("Subtotal", "RM${2.00.toStringAsFixed(2)}", bold: true), // computed subtotal
-                    const SizedBox(height: 20),
-                   /*
-                    priceRow("Delivery fee", "RM${deliveryFee.toStringAsFixed(2)}"),
-                    priceRow("Fees & Taxes", "RM${tax.toStringAsFixed(2)}"),
-                    priceRow("Discount", "-RM${discount.toStringAsFixed(2)}", color: Colors.orange),
-                    const Divider(),
-                    priceRow("Subtotal", "RM${subtotal.toStringAsFixed(2)}", bold: true),
-                    const SizedBox(height: 20),
-                    */
-                  ],
-                ),
-
-                // Checkout Button
-                MyButton(
-                  text: "Go to checkout",
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const PaymentPage()),
+                // Show pricing only if cart has items
+                if (userCart.isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  
+                  // Pricing Breakdown
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        priceRow("Order", "RM${orderTotal.toStringAsFixed(2)}"),
+                        if (isDelivery)
+                          priceRow("Delivery fee", "RM${deliveryFee.toStringAsFixed(2)}"),
+                        priceRow("Fees & Taxes", "RM${feesAndTaxes.toStringAsFixed(2)}"),
+                        priceRow("Discount", "-RM${discount.toStringAsFixed(2)}", color: Colors.orange),
+                        const Divider(color: Color(0xFF002D72)), // ✅ Blue divider
+                        priceRow("Subtotal", "RM${subtotal.toStringAsFixed(2)}", 
+                                bold: true, 
+                                color: const Color(0xFF002D72)), // ✅ Blue subtotal
+                      ],
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 20),
+
+                  // Checkout Button
+                  MyButton(
+                    text: "Go to checkout",
+                    backgroundColor: const Color(0xFF002D72), // ✅ Blue button
+                    onTap: () {
+                      if (userCart.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Your cart is empty!')),
+                        );
+                        return;
+                      }
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PaymentPage()),
+                      );
+                    },
+                  ),
+                ],
                 const SizedBox(height: 25),
               ],
             ),
@@ -131,14 +190,22 @@ final orderTotal = restaurant.getTotalPrice;
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: TextStyle(
-                  color: color ?? Colors.black,
-                  fontWeight: bold ? FontWeight.bold : FontWeight.normal)),
-          Text(amount,
-              style: TextStyle(
-                  color: color ?? Colors.black,
-                  fontWeight: bold ? FontWeight.bold : FontWeight.normal)),
+          Text(
+            label,
+            style: TextStyle(
+              color: color ?? Colors.black,
+              fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+              fontSize: bold ? 16 : 14,
+            ),
+          ),
+          Text(
+            amount,
+            style: TextStyle(
+              color: color ?? Colors.black,
+              fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+              fontSize: bold ? 16 : 14,
+            ),
+          ),
         ],
       ),
     );

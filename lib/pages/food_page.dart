@@ -72,9 +72,9 @@ class _FoodPageState extends State<FoodPage> {
               // food price
               Text(
                 '\$${widget.food.price}',
-                 style:  TextStyle(
+                 style: const TextStyle(
                   fontSize: 16,
-                  color: Theme.of(context).colorScheme.primary),
+                  color: Color(0xFF002D72)),
                ),
         
                const SizedBox(height: 10),
@@ -85,15 +85,15 @@ class _FoodPageState extends State<FoodPage> {
         
                 const SizedBox(height: 10),
         
-                Divider(color: Theme.of(context).colorScheme.secondary),
+                const Divider(color: Color(0xFF002D72)),
         
                 const SizedBox(height: 10),
         
               // addons
-               Text(
+               const Text(
                   "Add-ons", 
                   style: TextStyle(
-                  color: Theme.of(context).colorScheme.inversePrimary,
+                  color: Color(0xFF002D72),
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -102,7 +102,7 @@ class _FoodPageState extends State<FoodPage> {
               Container(
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.secondary),
+                    color: const Color(0xFF002D72)),
                     borderRadius: BorderRadius.circular(8),
                   ),
                 child: ListView.builder(
@@ -119,8 +119,8 @@ class _FoodPageState extends State<FoodPage> {
                       title: Text(addon.name),
                       subtitle: Text(
                         '\$${addon.price}',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
+                        style: const TextStyle(
+                          color: Color(0xFF002D72),
                         ),
                       ),
                       value: widget.selectedAddons[addon],
@@ -141,6 +141,7 @@ class _FoodPageState extends State<FoodPage> {
             MyButton(
               onTap: () => addToCart(widget.food, widget.selectedAddons), 
               text: "Add to cart",
+              backgroundColor: const Color(0xFF002D72),
               ),
 
               const SizedBox(height: 25),
@@ -155,12 +156,15 @@ class _FoodPageState extends State<FoodPage> {
           opacity: 0.6,
           child: Container(
             margin: const EdgeInsets.only(left: 25),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.secondary,
+            decoration: const BoxDecoration(
+              color: Colors.white,
               shape: BoxShape.circle,
             ),
             child: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_rounded),
+              icon: const Icon(
+                Icons.arrow_back_ios_rounded,
+                color: Color(0xFF002D72),
+              ),
             onPressed: () => Navigator.pop(context),
             ),
           ),

@@ -1,52 +1,83 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:hellodekal/models/profile_management.dart';
+import 'package:hellodekal/pages/cart_page.dart';
+import 'package:hellodekal/pages/home_page.dart';
 import 'package:hellodekal/pages/initial_page.dart';
+import 'package:hellodekal/pages/order_page.dart';
+import 'package:hellodekal/pages/order_preparation_page.dart';
+import 'package:hellodekal/pages/otp_verification_page.dart';
+import 'package:hellodekal/pages/phone_authentication_page.dart';
+import 'package:hellodekal/pages/profile_page.dart';
+import 'package:hellodekal/pages/search_page.dart';
 import 'package:hellodekal/services/auth/auth_gate.dart';
 import 'package:hellodekal/firebase_options.dart';
 import 'package:hellodekal/models/restaurant.dart';
+import 'package:hellodekal/services/auth/phone_authentication_service.dart';
 import 'package:hellodekal/themes/theme_provider.dart';
 import 'package:provider/provider.dart';
 
-void main()async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  //await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-    try {
+
+  try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
   } catch (e) {
     if (e is FirebaseException && e.code == 'duplicate-app') {
-      // Firebase already initialized, continue normally
       print('Firebase already initialized');
     } else {
-      // Re-throw other errors
       rethrow;
     }
   }
 
   runApp(
-   MultiProvider(providers: [
-    // theme provider
-    ChangeNotifierProvider(create: (context) => ThemeProvider()),
-
-    // restaurant provider
-    ChangeNotifierProvider(create: (context) => Restaurant()),
-
-    ],
-    child: const MyApp(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => ThemeProvider()),
+        ChangeNotifierProvider(create: (context) => Restaurant()),
+        ChangeNotifierProvider(create: (context) => UserModel()),
+        ChangeNotifierProvider(create: (context) => PhoneAuthenticationService()), // ✅ ADDED
+      ],
+      child: const MyApp(),
     ),
   );
 }
 
-class MyApp extends StatelessWidget{
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      title: 'UniCafe',
       home: const InitialPage(),
-      theme: Provider.of<ThemeProvider>(context).themeData,
-    ); //MaterialApp
+      theme: Provider.of<ThemeProvider>(context).themeData.copyWith(
+        primaryColor: const Color(0xFF002D72),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF002D72),
+          primary: const Color(0xFF002D72),
+          secondary: const Color(0xFF4A90E2),
+          surface: Colors.white,
+          background: const Color(0xFFF8F9FA),
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF002D72),
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
+      ),
+      routes: {
+        '/home': (context) => const HomePage(),
+        '/search': (context) => const SearchPage(),
+        '/profile': (context) => const ProfilePage(),
+        '/orders': (context) => const CartPage(),
+        '/preparation': (context) => const OrderPreparationPage(),
+        '/phone-auth': (context) => const PhoneAuthPage(),
+        '/otp-verification': (context) => const OTPVerificationPage(),
+      },
+    );
   }
 }

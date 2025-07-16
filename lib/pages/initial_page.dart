@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:hellodekal/pages/splash_page.dart';
 import 'package:hellodekal/services/auth/auth_gate.dart';
-import 'splash_page.dart';
 
 class InitialPage extends StatefulWidget {
   const InitialPage({super.key});
@@ -24,6 +24,6 @@ class _InitialPageState extends State<InitialPage> {
 
   @override
   Widget build(BuildContext context) {
-    return const SplashPage(); // Your splash screen UI
+    return const SplashPage();
   }
 }

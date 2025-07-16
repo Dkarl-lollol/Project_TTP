@@ -1,7 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hellodekal/models/profile_management.dart';
 import 'package:hellodekal/pages/home_page.dart';
-import 'package:hellodekal/services/auth/login_or_register.dart';
+import 'package:hellodekal/pages/phone_authentication_page.dart';
+//import 'package:hellodekal/models/user_model.dart';
+import 'package:provider/provider.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -9,17 +12,20 @@ class AuthGate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: StreamBuilder(
+      body: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
-          // user is logged in
-          if (snapshot.hasData){
+          // User is logged in
+          if (snapshot.hasData) {
+            // Load user data when authenticated
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Provider.of<UserModel>(context, listen: false).loadUserData();
+            });
             return const HomePage();
           }
-
-          // user is NOT logged in
-          else{
-            return const LoginOrRegister();
+          // User is NOT logged in
+          else {
+            return const PhoneAuthPage();
           }
         },
       ),

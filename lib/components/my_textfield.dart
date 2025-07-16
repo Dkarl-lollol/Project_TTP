@@ -4,12 +4,26 @@ class MyTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
   final bool obscureText;
+  final TextInputType? keyboardType;
+  final Widget? prefixIcon;
+  final Widget? suffixIcon;
+  final Color? fillColor;
+  final Color? borderColor;
+  final Color? textColor;
+  final Color? hintColor;
 
   const MyTextField({
     super.key,
     required this.controller,
     required this.hintText,
     required this.obscureText,
+    this.keyboardType,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.fillColor,
+    this.borderColor,
+    this.textColor,
+    this.hintColor,
   });
 
   @override
@@ -19,18 +33,37 @@ class MyTextField extends StatelessWidget {
       child: TextField(
         controller: controller,
         obscureText: obscureText,
-        style: const TextStyle(color: Colors.white), // 👈 White input text
+        keyboardType: keyboardType,
+        style: TextStyle(
+          color: textColor ?? Colors.white,
+          fontSize: 16,
+        ),
         decoration: InputDecoration(
-          enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white70), // 👈 Light white border
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: borderColor ?? Colors.white70,
+            ),
+            borderRadius: BorderRadius.circular(12),
           ),
-          focusedBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white), // 👈 Bright white when focused
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: borderColor ?? Colors.white,
+              width: 2,
+            ),
+            borderRadius: BorderRadius.circular(12),
           ),
           hintText: hintText,
-          hintStyle: const TextStyle(color: Colors.white70), // 👈 Light white hint
+          hintStyle: TextStyle(
+            color: hintColor ?? Colors.white70,
+          ),
           filled: true,
-          fillColor: Colors.transparent, // Optional: keep background transparent
+          fillColor: fillColor ?? Colors.transparent,
+          prefixIcon: prefixIcon,
+          suffixIcon: suffixIcon,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
         ),
       ),
     );
