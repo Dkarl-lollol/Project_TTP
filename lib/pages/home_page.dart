@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:hellodekal/pages/cart_page.dart';
+import 'package:hellodekal/pages/menu_page.dart';
 import 'package:hellodekal/pages/order_page.dart';
 import 'package:hellodekal/pages/search_page.dart';
 import 'package:hellodekal/pages/profile_page.dart';
-import 'package:hellodekal/pages/food_page.dart'; // ← ADD THIS IMPORT
+import 'package:hellodekal/pages/food_page.dart';
 import 'package:hellodekal/components/category_chip.dart';
 import 'package:hellodekal/components/restaurant_card.dart';
-import 'package:hellodekal/models/food.dart'; // ← ADD THIS IMPORT
-import 'package:hellodekal/models/restaurant.dart'; // ← ADD THIS IMPORT
-import 'package:provider/provider.dart'; // ← ADD THIS IMPORT
+import 'package:hellodekal/models/food.dart';
+import 'package:hellodekal/models/restaurant.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,10 +22,10 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-    const HomeContent(),           // Your current home content
-    const SearchPage(),            // Keep existing
-    const OrdersPage(),            // ← Changed to use OrdersPage from orders_page.dart
-    const ProfilePage(),           // Keep existing
+    const HomeContent(),
+    const SearchPage(),
+    const OrdersPage(),
+    const ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
@@ -44,9 +45,9 @@ class _HomePageState extends State<HomePage> {
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFF002D72), // Same blue as your image
-        selectedItemColor: const Color(0xFFFFD700), // Golden yellow for selected
-        unselectedItemColor: Colors.white70, // White for unselected
+        backgroundColor: const Color(0xFF002D72),
+        selectedItemColor: const Color(0xFFFFD700),
+        unselectedItemColor: Colors.white70,
         elevation: 8,
         selectedFontSize: 12,
         unselectedFontSize: 12,
@@ -79,30 +80,179 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class HomeContent extends StatelessWidget {
+class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
-  // ✅ NEW: Navigate to restaurant menu
+  @override
+  State<HomeContent> createState() => _HomeContentState();
+}
+
+class _HomeContentState extends State<HomeContent> {
+  String currentLocation = "V5A";
+  final TextEditingController _locationController = TextEditingController();
+
+  // Sample location suggestions
+  final List<String> _locationSuggestions = [
+    'V1B',
+    'V2A',
+    'V3C',
+    'V5B',
+  ];
+
+  void _showLocationPicker() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              left: 20,
+              right: 20,
+              top: 20,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle bar
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Title
+                const Text(
+                  'Set Pickup Location',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Search field
+                TextField(
+                  controller: _locationController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter address or postal code',
+                    prefixIcon: const Icon(Icons.search, color: Color(0xFF4A90E2)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF4A90E2)),
+                    ),
+                  ),
+                  onSubmitted: (value) {
+                    if (value.isNotEmpty) {
+                      setState(() {
+                        currentLocation = value;
+                      });
+                      Navigator.pop(context);
+                    }
+                  },
+                ),
+                const SizedBox(height: 20),
+                // Current location option
+                ListTile(
+                  leading: const Icon(Icons.my_location, color: Color(0xFF4A90E2)),
+                  title: const Text('Use current location'),
+                  subtitle: const Text('Automatically detect your location'),
+                  onTap: () {
+                    setState(() {
+                      currentLocation = "Current Location";
+                    });
+                    Navigator.pop(context);
+                    // TODO: Implement actual location detection
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Location detection coming soon!')),
+                    );
+                  },
+                ),
+                const Divider(),
+                // Location suggestions
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Suggested Locations',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 200,
+                  child: ListView.builder(
+                    itemCount: _locationSuggestions.length,
+                    itemBuilder: (context, index) {
+                      final location = _locationSuggestions[index];
+                      return ListTile(
+                        leading: Icon(
+                          location.contains('Campus') ? Icons.school :
+                          location == 'Home' ? Icons.home :
+                          location == 'Work' ? Icons.work :
+                          Icons.location_on,
+                          color: const Color(0xFF4A90E2),
+                        ),
+                        title: Text(location),
+                        onTap: () {
+                          setState(() {
+                            currentLocation = location;
+                          });
+                          Navigator.pop(context);
+                        },
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _navigateToRestaurantMenu(BuildContext context, String restaurantName) {
-    // Get sample foods for the restaurant
     final restaurant = Provider.of<Restaurant>(context, listen: false);
     final foods = restaurant.menu;
     
     if (foods.isNotEmpty) {
-      // For demo, show the first food item
-      // In a real app, you'd filter by restaurant or show a menu page
       Navigator.push(
         context,
-        MaterialPageRoute(
+      MaterialPageRoute(
           builder: (context) => FoodPage(food: foods.first),
         ),
       );
     } else {
-      // Show a message if no foods available
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('$restaurantName menu coming soon!')),
       );
     }
+  }
+
+  @override
+  void dispose() {
+    _locationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -113,82 +263,90 @@ class HomeContent extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: Row(
-          children: [
-            const Icon(
-              Icons.location_on,
-              color: Color(0xFF4A90E2),
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'V5A',
-              style: TextStyle(
+        title: GestureDetector(
+          onTap: _showLocationPicker,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.location_on,
                 color: Color(0xFF4A90E2),
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+                size: 20,
               ),
-            ),
-          ],
+              const SizedBox(width: 8),
+              Text(
+                currentLocation,
+                style: const TextStyle(
+                  color: Color(0xFF4A90E2),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(
+                Icons.keyboard_arrow_down,
+                color: Color(0xFF4A90E2),
+                size: 20,
+              ),
+            ],
+          ),
         ),
-actions: [
-  IconButton(
-    icon: const Icon(Icons.notifications, color: Colors.black),
-    onPressed: () {
-      // TODO: Implement notifications
-    },
-  ),
-  // ✅ ADD Consumer wrapper for cart icon
-  Consumer<Restaurant>(
-    builder: (context, restaurant, child) {
-      return Stack(
-        children: [
+        actions: [
           IconButton(
-            icon: const Icon(Icons.shopping_cart, color: Colors.black),
+            icon: const Icon(Icons.notifications, color: Colors.black),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const CartPage()),
+              // TODO: Implement notifications
+            },
+          ),
+          Consumer<Restaurant>(
+            builder: (context, restaurant, child) {
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.shopping_cart, color: Colors.black),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CartPage()),
+                      );
+                    },
+                  ),
+                  if (restaurant.getTotalItemCount() > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '${restaurant.getTotalItemCount()}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
               );
             },
           ),
-          // ✅ Cart badge
-          if (restaurant.getTotalItemCount() > 0)
-            Positioned(
-              right: 8,
-              top: 8,
-              child: Container(
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                constraints: const BoxConstraints(
-                  minWidth: 16,
-                  minHeight: 16,
-                ),
-                child: Text(
-                  '${restaurant.getTotalItemCount()}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
         ],
-      );
-    },
-  ),
-],
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Search bar (keep existing)
+            // Search bar
             Padding(
               padding: const EdgeInsets.all(20),
               child: GestureDetector(
@@ -220,7 +378,7 @@ actions: [
                 ),
               ),
             ),
-            // Categories (keep existing)
+            // Categories
             SizedBox(
               height: 120,
               child: ListView(
@@ -255,7 +413,7 @@ actions: [
                 ],
               ),
             ),
-            // Student's Choice Section (keep existing)
+            // Student's Choice Section
             const Padding(
               padding: EdgeInsets.all(20),
               child: Text(
@@ -267,7 +425,7 @@ actions: [
                 ),
               ),
             ),
-            // ✅ UPDATED: Restaurant cards with navigation
+            // Restaurant cards with navigation
             SizedBox(
               height: 200,
               child: ListView(
@@ -299,7 +457,7 @@ actions: [
                 ],
               ),
             ),
-            // Fastest Section (keep existing)
+            // Fastest Section
             const Padding(
               padding: EdgeInsets.all(20),
               child: Text(
@@ -311,7 +469,7 @@ actions: [
                 ),
               ),
             ),
-            // ✅ UPDATED: Additional restaurant cards with navigation
+            // Additional restaurant cards with navigation
             SizedBox(
               height: 200,
               child: ListView(

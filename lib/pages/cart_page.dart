@@ -23,7 +23,7 @@ class _CartPageState extends State<CartPage> {
         final orderTotal = restaurant.getTotalPrice();
         
         // Calculate totals
-        final deliveryFee = isDelivery ? 5.00 : 0.00;
+        final deliveryFee = isDelivery ? 2.50 : 0.00;
         final feesAndTaxes = 1.50;
         final discount = 2.00;
         final subtotal = orderTotal + deliveryFee + feesAndTaxes - discount;
@@ -37,7 +37,8 @@ class _CartPageState extends State<CartPage> {
               icon: const Icon(Icons.arrow_back, color: Colors.black),
               onPressed: () => Navigator.pop(context),
             ),
-            title: ToggleButtons(
+            title: Center(
+            child: ToggleButtons(
               isSelected: [isDelivery, !isDelivery],
               onPressed: (index) => setState(() => isDelivery = index == 0),
               borderRadius: BorderRadius.circular(24),
@@ -48,6 +49,7 @@ class _CartPageState extends State<CartPage> {
               selectedBorderColor: const Color(0xFF002D72), // ✅ Updated selected border
               constraints: const BoxConstraints(minWidth: 100, minHeight: 36),
               children: const [Text("Delivery"), Text("Pickup")],
+            ),
             ),
             actions: [
               IconButton(
@@ -87,6 +89,25 @@ class _CartPageState extends State<CartPage> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
+
+        // Divider after delivery/pickup
+        Container(
+          height: 1,
+          color: Colors.grey.shade300,
+          margin: const EdgeInsets.symmetric(vertical: 24), // More space around divider
+        ),
+
+        // Order header with better spacing
+        const Text(
+          "Order",
+          style: TextStyle(
+            fontSize: 26, // Slightly smaller
+            fontWeight: FontWeight.w600, // Less bold
+            color: Colors.black87, // Softer black
+          ),
+        ),
+        const SizedBox(height: 20),
+      
                 // Cart Items
                 Expanded(
                   child: userCart.isEmpty
@@ -147,7 +168,7 @@ class _CartPageState extends State<CartPage> {
                         if (isDelivery)
                           priceRow("Delivery fee", "RM${deliveryFee.toStringAsFixed(2)}"),
                         priceRow("Fees & Taxes", "RM${feesAndTaxes.toStringAsFixed(2)}"),
-                        priceRow("Discount", "-RM${discount.toStringAsFixed(2)}", color: Colors.orange),
+                        priceRow("Student Discount", "-RM${discount.toStringAsFixed(2)}", color: Colors.orange),
                         const Divider(color: Color(0xFF002D72)), // ✅ Blue divider
                         priceRow("Subtotal", "RM${subtotal.toStringAsFixed(2)}", 
                                 bold: true, 
