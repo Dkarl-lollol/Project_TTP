@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:hellodekal/components/my_button.dart';
 import 'package:hellodekal/components/my_cart_tile.dart';
 import 'package:hellodekal/models/restaurant.dart';
-import 'package:hellodekal/pages/payment_page.dart';
+import 'package:hellodekal/pages/payment_method_page.dart';
 import 'package:provider/provider.dart';
+import 'package:hellodekal/pages/delivery_details_page.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -14,6 +14,114 @@ class CartPage extends StatefulWidget {
 
 class _CartPageState extends State<CartPage> {
   bool isDelivery = true;
+  Map<String, dynamic>? deliveryDetails;
+
+void _handleCheckout() async {
+  final userCart = Provider.of<Restaurant>(context, listen: false).cart;
+   
+  if (userCart.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Your cart is empty!')),
+    );
+    return;
+  }
+
+  if (isDelivery) {
+    if (deliveryDetails == null) {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const DeliveryDetailsPage(),
+        ),
+      );
+       
+      if (result != null) {
+        setState(() {
+          deliveryDetails = result;
+        });
+         
+        _showTopNotification(
+          context,
+          deliveryDetails!['deliveryTime'] == 'Express'
+            ? 'Express delivery confirmed! +RM2.50 express fee added.'
+            : 'Standard delivery confirmed!',
+        );
+        return;
+      }
+    } else {
+      // Delivery with details - navigate to payment
+      final restaurant = Provider.of<Restaurant>(context, listen: false);
+      restaurant.setDeliveryType(isDelivery);
+      restaurant.setDeliveryDetails(deliveryDetails);
+       
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const PaymentPage()),
+      );
+    }
+  } else {
+    // Pickup - navigate to payment
+    final restaurant = Provider.of<Restaurant>(context, listen: false);
+    restaurant.setDeliveryType(isDelivery);
+    restaurant.setDeliveryDetails(deliveryDetails);
+     
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const PaymentPage()),
+    );
+  }
+}
+
+  void _showTopNotification(BuildContext context, String message) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+    
+    overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).padding.top + 10,
+        left: 20,
+        right: 20,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF002D72),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    message,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    
+    overlay.insert(overlayEntry);
+    
+    Future.delayed(const Duration(seconds: 3), () {
+      overlayEntry.remove();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,8 +130,10 @@ class _CartPageState extends State<CartPage> {
         final userCart = restaurant.cart;
         final orderTotal = restaurant.getTotalPrice();
         
-        // Calculate totals
-        final deliveryFee = isDelivery ? 2.50 : 0.00;
+        // Use dynamic delivery fee calculation
+        final deliveryFee = isDelivery 
+            ? (deliveryDetails?['deliveryTime'] == 'Express' ? 5.00 : 2.50)
+            : 0.00;
         final feesAndTaxes = 1.50;
         final discount = 2.00;
         final subtotal = orderTotal + deliveryFee + feesAndTaxes - discount;
@@ -38,18 +148,24 @@ class _CartPageState extends State<CartPage> {
               onPressed: () => Navigator.pop(context),
             ),
             title: Center(
-            child: ToggleButtons(
-              isSelected: [isDelivery, !isDelivery],
-              onPressed: (index) => setState(() => isDelivery = index == 0),
-              borderRadius: BorderRadius.circular(24),
-              fillColor: const Color(0xFF002D72), // ✅ Updated to your blue
-              selectedColor: Colors.white,
-              color: Colors.black,
-              borderColor: const Color(0xFF002D72), // ✅ Updated border color
-              selectedBorderColor: const Color(0xFF002D72), // ✅ Updated selected border
-              constraints: const BoxConstraints(minWidth: 100, minHeight: 36),
-              children: const [Text("Delivery"), Text("Pickup")],
-            ),
+              child: ToggleButtons(
+                isSelected: [isDelivery, !isDelivery],
+                onPressed: (index) => setState(() {
+                  isDelivery = index == 0;
+                  // Reset delivery details when switching to pickup
+                  if (!isDelivery) {
+                    deliveryDetails = null;
+                  }
+                }),
+                borderRadius: BorderRadius.circular(24),
+                fillColor: const Color(0xFF002D72),
+                selectedColor: Colors.white,
+                color: Colors.black,
+                borderColor: const Color(0xFF002D72),
+                selectedBorderColor: const Color(0xFF002D72),
+                constraints: const BoxConstraints(minWidth: 100, minHeight: 36),
+                children: const [Text("Delivery"), Text("Pickup")],
+              ),
             ),
             actions: [
               IconButton(
@@ -75,7 +191,7 @@ class _CartPageState extends State<CartPage> {
                           },
                           child: const Text(
                             "Yes",
-                            style: TextStyle(color: Color(0xFF002D72)), // ✅ Blue color
+                            style: TextStyle(color: Color(0xFF002D72)),
                           ),
                         ),
                       ],
@@ -89,25 +205,27 @@ class _CartPageState extends State<CartPage> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
+                // Divider after delivery/pickup
+                Container(
+                  height: 1,
+                  color: Colors.grey.shade300,
+                  margin: const EdgeInsets.symmetric(vertical: 24),
+                ),
 
-        // Divider after delivery/pickup
-        Container(
-          height: 1,
-          color: Colors.grey.shade300,
-          margin: const EdgeInsets.symmetric(vertical: 24), // More space around divider
-        ),
+                // Order header with better spacing
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Order",
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
 
-        // Order header with better spacing
-        const Text(
-          "Order",
-          style: TextStyle(
-            fontSize: 26, // Slightly smaller
-            fontWeight: FontWeight.w600, // Less bold
-            color: Colors.black87, // Softer black
-          ),
-        ),
-        const SizedBox(height: 20),
-      
                 // Cart Items
                 Expanded(
                   child: userCart.isEmpty
@@ -140,12 +258,151 @@ class _CartPageState extends State<CartPage> {
                             ],
                           ),
                         )
-                      : ListView.builder(
-                          itemCount: userCart.length,
-                          itemBuilder: (context, index) {
-                            final cartItem = userCart[index];
-                            return MyCartTile(cartItem: cartItem);
-                          },
+                      : Column(
+                          children: [
+                            // Cart Items List
+                            Expanded(
+                              child: ListView.builder(
+                                itemCount: userCart.length,
+                                itemBuilder: (context, index) {
+                                  final cartItem = userCart[index];
+                                  return MyCartTile(cartItem: cartItem);
+                                },
+                              ),
+                            ),
+                            
+                            // Show delivery details if confirmed (inside the scrollable area)
+                            if (isDelivery && deliveryDetails != null) ...[
+                              const SizedBox(height: 16),
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF002D72).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: const Color(0xFF002D72).withOpacity(0.3),
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        const Text(
+                                          "Delivery Details",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: () async {
+                                            final result = await Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => DeliveryDetailsPage(
+                                                  existingDetails: deliveryDetails,
+                                                ),
+                                              ),
+                                            );
+                                            if (result != null) {
+                                              setState(() {
+                                                deliveryDetails = result;
+                                              });
+                                              _showTopNotification(
+                                                context,
+                                                'Delivery details updated!',
+                                              );
+                                            }
+                                          },
+                                          child: const Text(
+                                            "Edit",
+                                            style: TextStyle(
+                                              color: Color(0xFF002D72),
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.access_time, size: 16, color: Color(0xFF002D72)),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          "${deliveryDetails!['deliveryTime']} delivery",
+                                          style: TextStyle(
+                                            fontWeight: deliveryDetails!['deliveryTime'] == 'Express' 
+                                                ? FontWeight.w600 
+                                                : FontWeight.normal,
+                                            color: deliveryDetails!['deliveryTime'] == 'Express' 
+                                                ? const Color(0xFF002D72) 
+                                                : Colors.black87,
+                                          ),
+                                        ),
+                                        if (deliveryDetails!['deliveryTime'] == 'Express')
+                                          const Text(
+                                            " (+RM2.50)",
+                                            style: TextStyle(
+                                              color: Color(0xFF002D72),
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.location_on, size: 16, color: Color(0xFF002D72)),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text("${deliveryDetails!['location']} - ${deliveryDetails!['instructions']}"),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.phone, size: 16, color: Color(0xFF002D72)),
+                                        const SizedBox(width: 8),
+                                        Text(deliveryDetails!['phone']),
+                                      ],
+                                    ),
+                                    if (deliveryDetails!['leaveAtDoor'] == true) ...[
+                                      const SizedBox(height: 6),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.door_front_door, size: 16, color: Color(0xFF002D72)),
+                                          const SizedBox(width: 8),
+                                          const Text("Leave at door"),
+                                        ],
+                                      ),
+                                    ],
+                                    if (deliveryDetails!['promoCode'] != null && 
+                                        deliveryDetails!['promoCode'].toString().isNotEmpty) ...[
+                                      const SizedBox(height: 6),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.local_offer, size: 16, color: Color(0xFF002D72)),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            "Promo: ${deliveryDetails!['promoCode']}",
+                                            style: const TextStyle(
+                                              color: Color(0xFF002D72),
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                 ),
 
@@ -165,35 +422,48 @@ class _CartPageState extends State<CartPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         priceRow("Order", "RM${orderTotal.toStringAsFixed(2)}"),
-                        if (isDelivery)
-                          priceRow("Delivery fee", "RM${deliveryFee.toStringAsFixed(2)}"),
+                        if (isDelivery) ...[
+                          if (deliveryDetails != null && deliveryDetails!['deliveryTime'] == 'Express') ...[
+                            priceRow("Standard delivery", "RM2.50"),
+                            priceRow("Express fee", "RM2.50", color: const Color(0xFF002D72)),
+                          ] else
+                            priceRow("Delivery fee", "RM${deliveryFee.toStringAsFixed(2)}"),
+                        ],
                         priceRow("Fees & Taxes", "RM${feesAndTaxes.toStringAsFixed(2)}"),
                         priceRow("Student Discount", "-RM${discount.toStringAsFixed(2)}", color: Colors.orange),
-                        const Divider(color: Color(0xFF002D72)), // ✅ Blue divider
+                        const Divider(color: Color(0xFF002D72)),
                         priceRow("Subtotal", "RM${subtotal.toStringAsFixed(2)}", 
                                 bold: true, 
-                                color: const Color(0xFF002D72)), // ✅ Blue subtotal
+                                color: const Color(0xFF002D72)),
                       ],
                     ),
                   ),
                   const SizedBox(height: 20),
 
                   // Checkout Button
-                  MyButton(
-                    text: "Go to checkout",
-                    backgroundColor: const Color(0xFF002D72), // ✅ Blue button
-                    onTap: () {
-                      if (userCart.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Your cart is empty!')),
-                        );
-                        return;
-                      }
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const PaymentPage()),
-                      );
-                    },
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _handleCheckout,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF002D72),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 2,
+                      ),
+                      child: Text(
+                        isDelivery 
+                            ? (deliveryDetails == null ? "Set Delivery Details" : "Go to checkout")
+                            : "Go to checkout",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
                 const SizedBox(height: 25),

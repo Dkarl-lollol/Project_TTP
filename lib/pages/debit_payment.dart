@@ -3,14 +3,14 @@ import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:hellodekal/components/my_button.dart';
 import 'package:hellodekal/pages/delivery_progress_page.dart';
 
-class PaymentPage extends StatefulWidget {
-  const PaymentPage({super.key});
+class DebitPaymentPage extends StatefulWidget {
+  const DebitPaymentPage({super.key});
 
   @override
-  State<PaymentPage> createState() => _PaymentPageState();
+  State<DebitPaymentPage> createState() => _DebitPaymentPageState();
 }
 
-class _PaymentPageState extends State<PaymentPage> {
+class _DebitPaymentPageState extends State<DebitPaymentPage> {
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
   String cardNumber = '';
   String expiryDate = '';

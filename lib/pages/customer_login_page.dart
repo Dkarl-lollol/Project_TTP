@@ -1,34 +1,30 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:hellodekal/pages/vendor_login_page.dart';
 import 'package:hellodekal/services/auth/phone_authentication_service.dart';
 import 'package:provider/provider.dart';
-import 'package:hellodekal/pages/login_page.dart';
 
-class PhoneAuthPage extends StatefulWidget {
-  const PhoneAuthPage({super.key});
+class CustomerLoginPage extends StatefulWidget {
+  const CustomerLoginPage({super.key});
 
   @override
-  State<PhoneAuthPage> createState() => _PhoneAuthPageState();
+  State<CustomerLoginPage> createState() => _CustomerLoginPage();
 }
 
-class _PhoneAuthPageState extends State<PhoneAuthPage> {
+class _CustomerLoginPage extends State<CustomerLoginPage> {
   final TextEditingController phoneController = TextEditingController();
   String countryCode = '+60'; 
   bool isLoading = false;
 
-    void navigateToVendorLogin() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => LoginPage(
-          onTap: () {
-            Navigator.pop(context); // Go back if needed
-          },
-        ),
-      ),
-    );
-  }
+void navigateToVendorLogin() {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const VendorLoginPage(), // Remove onTap parameter
+    ),
+  );
+}
 
 void handlePhoneSubmit() async {
   if (phoneController.text.isEmpty) {

@@ -2,12 +2,13 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hellodekal/models/profile_management.dart';
 import 'package:hellodekal/pages/cart_page.dart';
+import 'package:hellodekal/pages/customer_login_page.dart';
+import 'package:hellodekal/pages/debit_payment.dart';
+import 'package:hellodekal/pages/delivery_progress_page.dart';
 import 'package:hellodekal/pages/home_page.dart';
 import 'package:hellodekal/pages/initial_page.dart';
 import 'package:hellodekal/pages/order_page.dart';
 import 'package:hellodekal/pages/order_preparation_page.dart';
-import 'package:hellodekal/pages/otp_verification_page.dart';
-import 'package:hellodekal/pages/phone_authentication_page.dart';
 import 'package:hellodekal/pages/profile_page.dart';
 import 'package:hellodekal/pages/search_page.dart';
 import 'package:hellodekal/services/auth/auth_gate.dart';
@@ -74,9 +75,10 @@ class MyApp extends StatelessWidget {
         '/search': (context) => const SearchPage(),
         '/profile': (context) => const ProfilePage(),
         '/orders': (context) => const CartPage(),
-        '/preparation': (context) => const OrderPreparationPage(),
-        '/phone-auth': (context) => const PhoneAuthPage(),
-        '/otp-verification': (context) => const OTPVerificationPage(),
+        '/order_preparation': (context) => const OrderPreparationPage(),
+        '/debit_payment': (context) => const DebitPaymentPage(),
+        '/phone-auth': (context) => const CustomerLoginPage(),
+        '/delivery_progress': (context) => const DeliveryProgressPage(),
       },
     );
   }

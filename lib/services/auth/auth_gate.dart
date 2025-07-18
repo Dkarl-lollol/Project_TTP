@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hellodekal/models/profile_management.dart';
+import 'package:hellodekal/pages/customer_login_page.dart';
 import 'package:hellodekal/pages/home_page.dart';
-import 'package:hellodekal/pages/phone_authentication_page.dart';
 //import 'package:hellodekal/models/user_model.dart';
 import 'package:provider/provider.dart';
 
@@ -25,7 +25,7 @@ class AuthGate extends StatelessWidget {
           }
           // User is NOT logged in
           else {
-            return const PhoneAuthPage();
+            return const CustomerLoginPage();
           }
         },
       ),

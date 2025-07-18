@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hellodekal/components/profile_menu_item.dart';
 import 'package:hellodekal/models/profile_management.dart';
+import 'package:hellodekal/pages/customer_login_page.dart';
 //import 'package:hellodekal/models/user_model.dart';
 import 'package:hellodekal/pages/edit_profile_page.dart';
 import 'package:hellodekal/pages/settings_page.dart';
 import 'package:hellodekal/services/auth/auth_service.dart';
 import 'package:provider/provider.dart';
-import 'package:image_picker/image_picker.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -18,9 +18,17 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final AuthService _authService = AuthService();
 
-  void logout() async {
-    await _authService.signOut();
-  }
+void logout() async {
+  await _authService.signOut();
+  
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const CustomerLoginPage(),
+    ),
+    (route) => false,
+  );
+}
 
   void editProfile() {
     Navigator.push(

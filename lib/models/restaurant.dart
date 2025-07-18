@@ -348,6 +348,32 @@ class Restaurant extends ChangeNotifier {
 
   */
 
+  // Add these properties to your Restaurant class
+bool _isDelivery = true;
+Map<String, dynamic>? _deliveryDetails;
+
+// Add these getters
+bool get isDelivery => _isDelivery;
+Map<String, dynamic>? get deliveryDetails => _deliveryDetails;
+
+// Add these methods
+void setDeliveryType(bool isDelivery) {
+  _isDelivery = isDelivery;
+  notifyListeners();
+}
+
+void setDeliveryDetails(Map<String, dynamic>? details) {
+  _deliveryDetails = details;
+  notifyListeners();
+}
+
+// Add method to get dynamic delivery fee
+double getDeliveryFee() {
+  if (!_isDelivery) return 0.00;
+  if (_deliveryDetails?['deliveryTime'] == 'Express') return 5.00;
+  return 2.50;
+}
+
   // generate a receipt
   String displayCartReceipt(){
     final receipt = StringBuffer();

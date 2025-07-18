@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hellodekal/pages/login_page.dart';
+import 'package:hellodekal/pages/customer_login_page.dart'; // Updated import
 import 'package:hellodekal/pages/register_page.dart';
 
 class LoginOrRegister extends StatefulWidget {
@@ -21,7 +21,7 @@ class _LoginOrRegisterState extends State<LoginOrRegister> {
   @override
   Widget build(BuildContext context) {
     if (showLoginPage) {
-      return LoginPage(onTap: togglePages);
+      return CustomerLoginPage(); // Updated: No onTap parameter needed
     } else {
       return RegisterPage(onTap: togglePages);
     }

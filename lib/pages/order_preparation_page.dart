@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hellodekal/components/order_status_item.dart';
 import 'package:hellodekal/models/order_status.dart';
 import 'package:hellodekal/models/restaurant.dart';
@@ -15,16 +14,7 @@ class OrderPreparationPage extends StatefulWidget {
 }
 
 class _OrderPreparationPageState extends State<OrderPreparationPage> {
-  late GoogleMapController mapController;
-  OrderStatus currentStatus = OrderStatus.cooking;
-  
-  final LatLng _center = const LatLng(52.5200, 13.4050); // Berlin coordinates as shown in Figma
-
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-  }
-
-  @override
+    @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -46,27 +36,6 @@ class _OrderPreparationPageState extends State<OrderPreparationPage> {
       ),
       body: Column(
         children: [
-          // Map section
-          Container(
-            height: 300,
-            child: GoogleMap(
-              onMapCreated: _onMapCreated,
-              initialCameraPosition: CameraPosition(
-                target: _center,
-                zoom: 15.0,
-              ),
-              markers: {
-                Marker(
-                  markerId: const MarkerId('restaurant'),
-                  position: _center,
-                  icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-                  infoWindow: const InfoWindow(
-                    title: 'Restaurant Location',
-                  ),
-                ),
-              },
-            ),
-          ),
           // Order status section
           Expanded(
             child: Container(
@@ -148,27 +117,38 @@ class _OrderPreparationPageState extends State<OrderPreparationPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Subtotal',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                            const Text(
-                              'RM23.90',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ],
-                        ),
+Consumer<Restaurant>(
+  builder: (context, restaurant, child) {
+    // Same calculation as payment page
+    final orderTotal = restaurant.getTotalPrice();
+    final deliveryFee = restaurant.getDeliveryFee();
+    const feesAndTaxes = 1.50;
+    const discount = 2.00;
+    final subtotal = orderTotal + deliveryFee + feesAndTaxes - discount;
+    
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          'Subtotal',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+        Text(
+          'RM${subtotal.toStringAsFixed(2)}',
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+      ],
+    );
+  },
+),
                         const SizedBox(height: 16),
                         // Order items
                         Consumer<Restaurant>(
@@ -239,6 +219,30 @@ class _OrderPreparationPageState extends State<OrderPreparationPage> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 20),
+SizedBox(
+  width: double.infinity,
+  child: ElevatedButton(
+    onPressed: () {
+      Navigator.pushNamed(context, '/delivery_progress');
+    },
+    style: ElevatedButton.styleFrom(
+      backgroundColor: const Color(0xFF002D72),
+      foregroundColor: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+    child: const Text(
+      'View Receipt',
+      style: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  ),
+),
                 ],
               ),
             ),
