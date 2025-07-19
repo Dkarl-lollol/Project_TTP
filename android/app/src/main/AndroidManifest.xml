@@ -2,7 +2,7 @@
 package="com.example.hellodekal">
 
     <application
-        android:label="hellodekal"
+        android:label="UniCafe"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

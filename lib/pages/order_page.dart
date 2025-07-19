@@ -21,13 +21,22 @@ class _OrdersPageState extends State<OrdersPage> {
     ),
     Order(
       id: '2',
-      items: ['Nasi Lemak', 'Teh Tarik'],
-      total: 15.50,
+      items: ['Pattaya Fried Rice'],
+      total: 5.50,
       status: 'Completed',
       date: DateTime.now().subtract(const Duration(days: 3)),
-      restaurant: 'V5 Cafe',
+      restaurant: 'V6 Cafe',
+    ),
+    Order(
+      id: '3',
+      items: ['Pattaya Fried Rice + extra rice + no vegetables'],
+      total: 11.00,
+      status: 'Preparing',
+      date: DateTime.now().subtract(const Duration(days: 3)),
+      restaurant: 'V6 Cafe',
     ),
   ];
+  
 
   @override
   Widget build(BuildContext context) {

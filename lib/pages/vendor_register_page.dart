@@ -1,29 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:hellodekal/components/my_button.dart';
 import 'package:hellodekal/components/my_textfield.dart';
-import 'package:hellodekal/screens/vendor/vendor_dashboard.dart';
 import 'package:hellodekal/services/auth/auth_service.dart';
-import 'vendor_register_page.dart';
-class VendorLoginPage extends StatefulWidget {
-  const VendorLoginPage({super.key});
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+class VendorRegisterPage extends StatefulWidget {
+  const VendorRegisterPage({super.key});
 
   @override
-  State<VendorLoginPage> createState() => _VendorLoginPageState();
+  State<VendorRegisterPage> createState() => _VendorRegisterPageState();
 }
 
-class _VendorLoginPageState extends State<VendorLoginPage> {
+class _VendorRegisterPageState extends State<VendorRegisterPage> {
+  final TextEditingController cafeNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
+  
   bool isLoading = false;
 
-  void login() async {
-    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill in all fields'),
-          backgroundColor: Colors.red,
-        ),
-      );
+  void register() async {
+    // Validation
+    if (cafeNameController.text.isEmpty ||
+        emailController.text.isEmpty || 
+        passwordController.text.isEmpty ||
+        confirmPasswordController.text.isEmpty) {
+      _showError('Please fill in all fields');
+      return;
+    }
+
+    if (passwordController.text != confirmPasswordController.text) {
+      _showError('Passwords do not match');
+      return;
+    }
+
+    if (passwordController.text.length < 6) {
+      _showError('Password must be at least 6 characters');
+      return;
+    }
+
+    if (!_isValidEmail(emailController.text.trim())) {
+      _showError('Please enter a valid email address');
       return;
     }
 
@@ -34,37 +52,37 @@ class _VendorLoginPageState extends State<VendorLoginPage> {
     final authService = AuthService();
 
     try {
-      await authService.signInWithEmailPassword(
+      // Create user account
+      UserCredential userCredential = await authService.signUpWithEmailPassword(
         emailController.text.trim(),
         passwordController.text.trim(),
       );
 
+      // Save vendor data to Firestore
+      await FirebaseFirestore.instance
+          .collection('vendors')
+          .doc(userCredential.user!.uid)
+          .set({
+        'name': cafeNameController.text.trim(),
+        'email': emailController.text.trim(),
+        'user_type': 'vendor',
+        'created_at': FieldValue.serverTimestamp(),
+        'is_active': true,
+        'operating_hours': '8:00 AM - 8:00 PM', // Default hours
+      });
+
       if (mounted) {
-        // Navigate to vendor dashboard on successful login
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => VendorDashboard()),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Login Error'),
-            content: Text(e.toString()),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF002D72),
-                ),
-                child: const Text('OK'),
-              ),
-            ],
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Account created successfully! Please log in.'),
+            backgroundColor: Colors.green,
           ),
         );
+        Navigator.pop(context);
       }
+
+    } catch (e) {
+      _showError(e.toString());
     } finally {
       if (mounted) {
         setState(() {
@@ -74,11 +92,26 @@ class _VendorLoginPageState extends State<VendorLoginPage> {
     }
   }
 
-  void navigateToRegister() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const VendorRegisterPage()),
-    );
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
+  void _showError(String message) {
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Registration Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   @override
@@ -103,7 +136,7 @@ class _VendorLoginPageState extends State<VendorLoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo
+                  // Logo (matching login page exactly)
                   Container(
                     margin: const EdgeInsets.only(bottom: 30),
                     padding: const EdgeInsets.all(20),
@@ -119,8 +152,8 @@ class _VendorLoginPageState extends State<VendorLoginPage> {
                       ],
                     ),
                     child: Container(
-                      width: 150,
-                      height: 150,
+                      width: 120,
+                      height: 120,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
@@ -128,19 +161,19 @@ class _VendorLoginPageState extends State<VendorLoginPage> {
                       child: Center(
                         child: Image.asset(
                           'lib/images/logo/logocafe.jpg',
-                          width: 150,
-                          height: 150,
+                          width: 120,
+                          height: 120,
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
-                              width: 100,
-                              height: 80,
+                              width: 80,
+                              height: 60,
                               color: Colors.red,
                               child: const Center(
                                 child: Text(
                                   'Image\nNot Found',
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(color: Colors.white),
+                                  style: TextStyle(color: Colors.white, fontSize: 10),
                                 ),
                               ),
                             );
@@ -150,9 +183,9 @@ class _VendorLoginPageState extends State<VendorLoginPage> {
                     ),
                   ),
                   
-                  // Title - Vendor Login
+                  // Title
                   const Text(
-                    "Vendor Login",
+                    "Vendor Registration",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 28,
@@ -162,13 +195,21 @@ class _VendorLoginPageState extends State<VendorLoginPage> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    "Access your cafe dashboard",
+                    "Join UniCafe as a vendor",
                     style: TextStyle(
                       color: Colors.white70,
                       fontSize: 16,
                     ),
                   ),
                   const SizedBox(height: 40),
+                  
+                  // Cafe Name field
+                  MyTextField(
+                    controller: cafeNameController,
+                    hintText: "Cafe/Restaurant Name",
+                    obscureText: false,
+                  ),
+                  const SizedBox(height: 20),
                   
                   // Email field
                   MyTextField(
@@ -185,31 +226,39 @@ class _VendorLoginPageState extends State<VendorLoginPage> {
                     hintText: "Password",
                     obscureText: true,
                   ),
+                  const SizedBox(height: 20),
+                  
+                  // Confirm Password field
+                  MyTextField(
+                    controller: confirmPasswordController,
+                    hintText: "Confirm Password",
+                    obscureText: true,
+                  ),
                   const SizedBox(height: 40),
                   
-                  // Login button
+                  // Register button
                   MyButton(
-                    text: "Login",
-                    onTap: login,
+                    text: "Create Vendor Account",
+                    onTap: register,
                     isLoading: isLoading,
                     backgroundColor: Colors.white,
                     textColor: const Color(0xFF002D72),
                   ),
                   const SizedBox(height: 20),
                   
-                  // Register link
+                  // Login link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
-                        "Don't have an account?",
+                        "Already have an account?",
                         style: TextStyle(color: Colors.white70),
                       ),
                       const SizedBox(width: 4),
                       GestureDetector(
-                        onTap: navigateToRegister,
+                        onTap: () => Navigator.pop(context),
                         child: const Text(
-                          "Register",
+                          "Sign In",
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -220,8 +269,7 @@ class _VendorLoginPageState extends State<VendorLoginPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 30),
-                  
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -233,8 +281,10 @@ class _VendorLoginPageState extends State<VendorLoginPage> {
 
   @override
   void dispose() {
+    cafeNameController.dispose();
     emailController.dispose();
     passwordController.dispose();
+    confirmPasswordController.dispose();
     super.dispose();
   }
 }
