@@ -16,6 +16,8 @@ class _CartPageState extends State<CartPage> {
   bool isDelivery = true;
   Map<String, dynamic>? deliveryDetails;
 
+// Replace your _handleCheckout method in cart_page.dart with this:
+
 void _handleCheckout() async {
   final userCart = Provider.of<Restaurant>(context, listen: false).cart;
    
@@ -49,25 +51,64 @@ void _handleCheckout() async {
         return;
       }
     } else {
-      // Delivery with details - navigate to payment
+      // Calculate the EXACT same totals as shown in cart
       final restaurant = Provider.of<Restaurant>(context, listen: false);
+      final orderTotal = restaurant.getTotalPrice();
+      final deliveryFee = isDelivery 
+          ? (deliveryDetails?['deliveryTime'] == 'Express' ? 5.00 : 2.50)
+          : 0.00;
+      final feesAndTaxes = 1.50;
+      final discount = 2.00;
+      final subtotal = orderTotal + deliveryFee + feesAndTaxes - discount;
+      
+      // Pass the EXACT cart calculation to payment page
+      final cartTotals = {
+        'orderTotal': orderTotal,
+        'deliveryFee': deliveryFee,
+        'feesAndTaxes': feesAndTaxes,
+        'discount': discount,
+        'subtotal': subtotal, // This is your final total from cart
+        'isDelivery': isDelivery,
+        'deliveryDetails': deliveryDetails,
+      };
+      
       restaurant.setDeliveryType(isDelivery);
       restaurant.setDeliveryDetails(deliveryDetails);
        
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const PaymentPage()),
+        MaterialPageRoute(
+          builder: (context) => PaymentPage(cartTotals: cartTotals), // Pass cart totals
+        ),
       );
     }
   } else {
-    // Pickup - navigate to payment
+    // Pickup - calculate the same way
     final restaurant = Provider.of<Restaurant>(context, listen: false);
+    final orderTotal = restaurant.getTotalPrice();
+    final deliveryFee = 0.00; // No delivery for pickup
+    final feesAndTaxes = 1.50;
+    final discount = 2.00;
+    final subtotal = orderTotal + deliveryFee + feesAndTaxes - discount;
+    
+    final cartTotals = {
+      'orderTotal': orderTotal,
+      'deliveryFee': deliveryFee,
+      'feesAndTaxes': feesAndTaxes,
+      'discount': discount,
+      'subtotal': subtotal, // This is your final total from cart
+      'isDelivery': isDelivery,
+      'deliveryDetails': deliveryDetails,
+    };
+    
     restaurant.setDeliveryType(isDelivery);
     restaurant.setDeliveryDetails(deliveryDetails);
      
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const PaymentPage()),
+      MaterialPageRoute(
+        builder: (context) => PaymentPage(cartTotals: cartTotals), // Pass cart totals
+      ),
     );
   }
 }

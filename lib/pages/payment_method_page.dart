@@ -3,7 +3,9 @@ import 'package:hellodekal/models/restaurant.dart';
 import 'package:provider/provider.dart';
 
 class PaymentPage extends StatefulWidget {
-  const PaymentPage({super.key});
+  final Map<String, dynamic>? cartTotals; // Add this parameter
+  
+  const PaymentPage({super.key, this.cartTotals});
 
   @override
   State<PaymentPage> createState() => _PaymentPageState();
@@ -71,11 +73,8 @@ class _PaymentPageState extends State<PaymentPage> {
   }
 
   void _showQRCodeDialog() {
-    final orderTotal = Provider.of<Restaurant>(context, listen: false).getTotalPrice();
-    const deliveryFee = 2.50;
-    const feesAndTaxes = 1.50;
-    const discount = 2.00;
-    final subtotal = orderTotal + deliveryFee + feesAndTaxes - discount;
+    // Use cart total instead of recalculating
+    final double subtotal = widget.cartTotals?['subtotal'] ?? 0.0;
 
     showDialog(
       context: context,
@@ -308,210 +307,218 @@ class _PaymentPageState extends State<PaymentPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Restaurant>(
-      builder: (context, restaurant, child) {
-        final orderTotal = restaurant.getTotalPrice();
-        const deliveryFee = 2.50;
-        const feesAndTaxes = 1.50;
-        const discount = 2.00;
-        final subtotal = orderTotal + deliveryFee + feesAndTaxes - discount;
+    // Use cart totals instead of recalculating
+    final double orderTotal = widget.cartTotals?['orderTotal'] ?? 0.0;
+    final double deliveryFee = widget.cartTotals?['deliveryFee'] ?? 0.0;
+    final double feesAndTaxes = widget.cartTotals?['feesAndTaxes'] ?? 0.0;
+    final double discount = widget.cartTotals?['discount'] ?? 0.0;
+    final double subtotal = widget.cartTotals?['subtotal'] ?? 0.0;
+    final bool isDelivery = widget.cartTotals?['isDelivery'] ?? false;
+    final Map<String, dynamic>? deliveryDetails = widget.cartTotals?['deliveryDetails'];
 
-        return Scaffold(
-          backgroundColor: Colors.white,
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: const Text(
-              'Payment',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Payment',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
-          body: Column(
-            children: [
-              // Order Summary Section
-              Container(
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
+        ),
+      ),
+      body: Column(
+        children: [
+          // Order Summary Section - using cart totals
+          Container(
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Order Summary',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Order Summary',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildSummaryRow('Order Total', 'RM${orderTotal.toStringAsFixed(2)}'),
+                const SizedBox(height: 12),
+                _buildSummaryRow('Order Total', 'RM${orderTotal.toStringAsFixed(2)}'),
+                
+                // Show delivery fee exactly as cart shows it
+                if (isDelivery) ...[
+                  if (deliveryDetails?['deliveryTime'] == 'Express') ...[
+                    _buildSummaryRow('Standard delivery', 'RM2.50'),
+                    _buildSummaryRow('Express fee', 'RM2.50', color: const Color(0xFF002D72)),
+                  ] else
                     _buildSummaryRow('Delivery Fee', 'RM${deliveryFee.toStringAsFixed(2)}'),
-                    _buildSummaryRow('Fees & Taxes', 'RM${feesAndTaxes.toStringAsFixed(2)}'),
-                    _buildSummaryRow('Discount', '-RM${discount.toStringAsFixed(2)}', 
-                                   color: Colors.orange),
-                    const Divider(color: Color(0xFF002D72)),
-                    _buildSummaryRow('Total Amount', 'RM${subtotal.toStringAsFixed(2)}', 
-                                   bold: true, color: const Color(0xFF002D72)),
-                  ],
-                ),
-              ),
-
-              // Payment Methods Section
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Select Payment Method',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: paymentMethods.length,
-                          itemBuilder: (context, index) {
-                            final method = paymentMethods[index];
-                            final isSelected = selectedPaymentMethod == method['id'];
-                            
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              child: InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    selectedPaymentMethod = method['id'];
-                                  });
-                                },
-                                borderRadius: BorderRadius.circular(12),
-                                child: Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: isSelected 
-                                          ? const Color(0xFF002D72) 
-                                          : Colors.grey.shade300,
-                                      width: isSelected ? 2 : 1,
-                                    ),
-                                    color: isSelected 
-                                        ? const Color(0xFF002D72).withOpacity(0.05) 
-                                        : Colors.white,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      // Payment method icon
-                                      Container(
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: method['color'].withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Icon(
-                                          method['icon'],
-                                          color: method['color'],
-                                          size: 24,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      
-                                      // Payment method details
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              method['title'],
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                                color: isSelected 
-                                                    ? const Color(0xFF002D72) 
-                                                    : Colors.black,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              method['subtitle'],
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.grey.shade600,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      
-                                      // Selection indicator
-                                      Radio<String>(
-                                        value: method['id'],
-                                        groupValue: selectedPaymentMethod,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            selectedPaymentMethod = value!;
-                                          });
-                                        },
-                                        activeColor: const Color(0xFF002D72),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Pay Now Button
-              Container(
-                padding: const EdgeInsets.all(16),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _processPayment,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF002D72),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 2,
-                    ),
-                    child: Text(
-                      _getButtonText(subtotal),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+                ],
+                
+                _buildSummaryRow('Fees & Taxes', 'RM${feesAndTaxes.toStringAsFixed(2)}'),
+                _buildSummaryRow('Discount', '-RM${discount.toStringAsFixed(2)}', 
+                               color: Colors.orange),
+                const Divider(color: Color(0xFF002D72)),
+                _buildSummaryRow('Total Amount', 'RM${subtotal.toStringAsFixed(2)}', 
+                               bold: true, color: const Color(0xFF002D72)),
+              ],
+            ),
           ),
-        );
-      },
+
+          // Payment Methods Section
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Select Payment Method',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: paymentMethods.length,
+                      itemBuilder: (context, index) {
+                        final method = paymentMethods[index];
+                        final isSelected = selectedPaymentMethod == method['id'];
+                        
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                selectedPaymentMethod = method['id'];
+                              });
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: isSelected 
+                                      ? const Color(0xFF002D72) 
+                                      : Colors.grey.shade300,
+                                  width: isSelected ? 2 : 1,
+                                ),
+                                color: isSelected 
+                                    ? const Color(0xFF002D72).withOpacity(0.05) 
+                                    : Colors.white,
+                              ),
+                              child: Row(
+                                children: [
+                                  // Payment method icon
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: method['color'].withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(
+                                      method['icon'],
+                                      color: method['color'],
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  
+                                  // Payment method details
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          method['title'],
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            color: isSelected 
+                                                ? const Color(0xFF002D72) 
+                                                : Colors.black,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          method['subtitle'],
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey.shade600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  
+                                  // Selection indicator
+                                  Radio<String>(
+                                    value: method['id'],
+                                    groupValue: selectedPaymentMethod,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        selectedPaymentMethod = value!;
+                                      });
+                                    },
+                                    activeColor: const Color(0xFF002D72),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Pay Now Button
+          Container(
+            padding: const EdgeInsets.all(16),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _processPayment,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF002D72),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 2,
+                ),
+                child: Text(
+                  _getButtonText(subtotal),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
