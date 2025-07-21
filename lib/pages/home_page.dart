@@ -34,9 +34,87 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+   Future<bool> _showExitConfirmationDialog() async {
+    return await showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // User must tap button to close
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.exit_to_app, color: Color(0xFF002D72)),
+              SizedBox(width: 12),
+              Text(
+                'Exit App',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF002D72),
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Are you sure you want to exit UniCafe?',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.black87,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false); // Don't exit
+              },
+              child: const Text(
+                'Cancel',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(true); // Exit app
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF002D72),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              ),
+              child: const Text(
+                'Exit',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    ) ?? false; // Return false if dialog is dismissed
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    // WRAP YOUR EXISTING Scaffold WITH WillPopScope
+    return WillPopScope(
+      onWillPop: () async {
+        // Show confirmation dialog when back button is pressed
+        bool shouldExit = await _showExitConfirmationDialog();
+        return shouldExit; // Only exit if user confirms
+      },
+
+    child: Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
         children: _pages,
@@ -73,8 +151,9 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -231,23 +310,40 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  void _navigateToRestaurantMenu(BuildContext context, String restaurantName) {
-    final restaurant = Provider.of<Restaurant>(context, listen: false);
-    final foods = restaurant.menu;
-    
-    if (foods.isNotEmpty) {
-      Navigator.push(
-        context,
-      MaterialPageRoute(
-          builder: (context) => FoodPage(food: foods.first),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$restaurantName menu coming soon!')),
-      );
-    }
+void _navigateToRestaurantMenu(BuildContext context, String restaurantName) {
+  FoodCategory category;
+  
+  // Simple mapping of restaurant names to categories
+  switch (restaurantName) {
+    case 'V3 Cafe':
+      category = FoodCategory.v3;
+      break;
+    case 'V5 Cafe':
+      category = FoodCategory.v5;
+      break;
+    case 'V1 Cafe':
+      category = FoodCategory.v1;
+      break;
+    case 'V2 Cafe':
+      category = FoodCategory.v2;
+      break;
+    default:
+      // Fallback to any existing category
+      category = FoodCategory.v3;
+      break;
   }
+  
+  // Navigate to MenuPage with correct parameters
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => MenuPage(
+        restaurantName: restaurantName,
+        category: category,
+      ),
+    ),
+  );
+}
 
   @override
   void dispose() {
@@ -441,6 +537,7 @@ class _HomeContentState extends State<HomeContent> {
                       distance: '0.2km',
                       time: '10 min',
                       image: 'lib/images/v3/v3cafe.jpeg',
+
                     ),
                   ),
                   GestureDetector(
