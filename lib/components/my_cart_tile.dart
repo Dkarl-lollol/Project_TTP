@@ -6,7 +6,13 @@ import 'package:provider/provider.dart';
 
 class MyCartTile extends StatelessWidget {
   final CartItem cartItem;
-  const MyCartTile({super.key, required this.cartItem});
+  final VoidCallback? onRemove;
+
+  const MyCartTile({
+    super.key, 
+    required this.cartItem,
+    this.onRemove,
+    });
 
   @override
   Widget build(BuildContext context) {
@@ -109,12 +115,12 @@ class MyCartTile extends StatelessWidget {
                     food: cartItem.food,
                       onDecrement: () {
                          if (cartItem.quantity == 1) {
-                        // Show confirmation dialog before removing the last item
+                        // Show confirmation dialog before removing THIS SPECIFIC item
                         showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: const Text("Clear cart?"),
-                      content: const Text("Are you sure you want to remove all items from your cart?"),
+                      title: const Text("Remove item?"),
+                      content: Text("Remove ${cartItem.food.name} from your cart?"),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
@@ -126,18 +132,28 @@ class MyCartTile extends StatelessWidget {
                         TextButton(
                           onPressed: () {
                             Navigator.pop(context);
-                            restaurant.clearCart(); // Or restaurant.removeFromCart(cartItem) if you only want to remove 1 item
+                            // Remove only this specific cart item, not the entire cart
+                            restaurant.removeFromCart(cartItem);
+                            
+                            // Show confirmation snackbar
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("${cartItem.food.name} removed from cart"),
+                                backgroundColor: Colors.orange,
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
                           },
                           child: const Text(
-                            "Yes",
-                            style: TextStyle(color: Color(0xFF002D72)),
+                            "Remove",
+                            style: TextStyle(color: Colors.red),
                           ),
                         ),
                       ],
                     ),
                   );
                 } else {
-                        // Just decrement the quantity
+                        // Just decrement the quantity by 1
                       restaurant.removeFromCart(cartItem);
                 }
                       },

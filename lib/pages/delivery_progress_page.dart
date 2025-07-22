@@ -4,7 +4,9 @@ import 'package:hellodekal/services/database/firestore.dart';
 import 'package:provider/provider.dart';
 
 class DeliveryProgressPage extends StatefulWidget {
-  const DeliveryProgressPage({super.key});
+  final Map<String, dynamic>? cartTotals; // Add this parameter
+  
+  const DeliveryProgressPage({super.key, this.cartTotals});
   
   @override
   State<DeliveryProgressPage> createState() => _DeliveryProgressPageState();
@@ -20,10 +22,48 @@ class _DeliveryProgressPageState extends State<DeliveryProgressPage> {
     // if we get to this page, submit order to firestore db
     String receipt = context.read<Restaurant>().displayCartReceipt();
     db.saveOrderToDatabase(receipt);
+    
+    // Clear the cart after successful order placement
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<Restaurant>().clearCart();
+      }
+    });
+  }
+
+  // Add fallback calculation method
+  Map<String, dynamic> _calculateFallbackTotals() {
+    final restaurant = Provider.of<Restaurant>(context, listen: false);
+    double orderTotal = restaurant.getTotalPrice();
+    double deliveryFee = 2.50;
+    double feesAndTaxes = 1.50;
+    double discount = 2.00;
+    double subtotal = orderTotal + deliveryFee + feesAndTaxes - discount;
+    
+    return {
+      'orderTotal': orderTotal,
+      'deliveryFee': deliveryFee,
+      'feesAndTaxes': feesAndTaxes,
+      'discount': discount,
+      'subtotal': subtotal,
+      'isDelivery': true,
+      'deliveryDetails': {'deliveryTime': 'Standard'},
+    };
   }
 
   @override
   Widget build(BuildContext context) {
+    // Use provided cartTotals or calculate fallback
+    final Map<String, dynamic> totals = widget.cartTotals ?? _calculateFallbackTotals();
+    
+    final double orderTotal = totals['orderTotal'] ?? 0.0;
+    final double deliveryFee = totals['deliveryFee'] ?? 0.0;
+    final double feesAndTaxes = totals['feesAndTaxes'] ?? 0.0;
+    final double discount = totals['discount'] ?? 0.0;
+    final double subtotal = totals['subtotal'] ?? 0.0;
+    final bool isDelivery = totals['isDelivery'] ?? false;
+    final Map<String, dynamic>? deliveryDetails = totals['deliveryDetails'];
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -139,11 +179,20 @@ class _DeliveryProgressPageState extends State<DeliveryProgressPage> {
                           ),
                           const SizedBox(height: 12),
                           
-                          // Order summary calculations
-                          _buildSummaryRow('Order Total', restaurant.getTotalPrice()),
-                          _buildSummaryRow('Delivery Fee', 2.50),
-                          _buildSummaryRow('Fees & Taxes', 1.50),
-                          _buildSummaryRow('Discount', -2.00, isNegative: true),
+                          // Order summary calculations - now using cart totals like payment page
+                          _buildSummaryRow('Order Total', orderTotal),
+                          
+                          // Show delivery fee exactly as cart/payment shows it
+                          if (isDelivery) ...[
+                            if (deliveryDetails?['deliveryTime'] == 'Express') ...[
+                              _buildSummaryRow('Standard delivery', 2.50),
+                              _buildSummaryRow('Express fee', 2.50, color: const Color(0xFF002D72)),
+                            ] else
+                              _buildSummaryRow('Delivery Fee', deliveryFee),
+                          ],
+                          
+                          _buildSummaryRow('Fees & Taxes', feesAndTaxes),
+                          _buildSummaryRow('Discount', discount, isNegative: true),
                           
                           const SizedBox(height: 8),
                           Container(
@@ -187,7 +236,7 @@ class _DeliveryProgressPageState extends State<DeliveryProgressPage> {
                                 ),
                               ),
                               Text(
-                                'RM${(restaurant.getTotalPrice() + 2.50 + 1.50 - 2.00).toStringAsFixed(2)}',
+                                'RM${subtotal.toStringAsFixed(2)}', // Use calculated subtotal from cart
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -249,12 +298,6 @@ class _DeliveryProgressPageState extends State<DeliveryProgressPage> {
                     '/home', 
                     (route) => false,
                   );
-                  // Alternative: Direct navigation (uncomment if you prefer this)
-                  // Navigator.pushAndRemoveUntil(
-                  //   context,
-                  //   MaterialPageRoute(builder: (context) => const HomePage()),
-                  //   (route) => false,
-                  // );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF002D72),
@@ -282,7 +325,7 @@ class _DeliveryProgressPageState extends State<DeliveryProgressPage> {
     );
   }
 
-  Widget _buildSummaryRow(String label, double amount, {bool isNegative = false}) {
+  Widget _buildSummaryRow(String label, double amount, {bool isNegative = false, Color? color}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -290,9 +333,9 @@ class _DeliveryProgressPageState extends State<DeliveryProgressPage> {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: Colors.black87,
+              color: color ?? Colors.black87,
             ),
           ),
           Text(
@@ -301,7 +344,7 @@ class _DeliveryProgressPageState extends State<DeliveryProgressPage> {
               : 'RM${amount.toStringAsFixed(2)}',
             style: TextStyle(
               fontSize: 14,
-              color: isNegative ? Colors.orange : Colors.black87,
+              color: color ?? (isNegative ? Colors.orange : Colors.black87),
             ),
           ),
         ],

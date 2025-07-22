@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hellodekal/models/restaurant.dart';
 import 'package:provider/provider.dart';
+import 'package:hellodekal/pages/delivery_progress_page.dart';
 
 class PaymentPage extends StatefulWidget {
   final Map<String, dynamic>? cartTotals; // Add this parameter
@@ -267,15 +268,28 @@ class _PaymentPageState extends State<PaymentPage> {
     });
   }
 
-  void _navigateToOrderPreparation() {
+void _navigateToOrderPreparation() {
+  try {
+    // Navigate to order preparation page - pass cartTotals for alignment
+    Navigator.pushNamed(
+      context, 
+      '/order_preparation',
+      arguments: widget.cartTotals, // Pass cartTotals as arguments
+    );
+  } catch (e) {
+    // If named route fails, try direct navigation with cartTotals
     try {
-      // Navigate to order preparation page - using same method as debit payment
-      Navigator.pushNamed(context, '/order_preparation');
-    } catch (e) {
-      // If named route fails, show error and go back to home
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DeliveryProgressPage(cartTotals: widget.cartTotals),
+        ),
+      );
+    } catch (e2) {
+      // If all fails, show error and go back to home
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Navigation error: $e'),
+          content: Text('Navigation error: $e2'),
           backgroundColor: Colors.red,
         ),
       );
@@ -283,12 +297,16 @@ class _PaymentPageState extends State<PaymentPage> {
       Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }
+}
 
-  void _navigateToDebitPayment() {
-    // Navigate to debit payment page
-    // Using named route - make sure this route is defined in your main.dart
-    Navigator.pushNamed(context, '/debit_payment');
-  }
+void _navigateToDebitPayment() {
+  // Navigate to debit payment page with cartTotals
+  Navigator.pushNamed(
+    context, 
+    '/debit_payment',
+    arguments: widget.cartTotals, // Pass cartTotals for consistency
+  );
+}
 
   String _getProcessingMessage() {
     switch (selectedPaymentMethod) {

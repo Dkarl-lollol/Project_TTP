@@ -8,6 +8,7 @@ import 'package:hellodekal/pages/delivery_progress_page.dart';
 import 'package:hellodekal/pages/home_page.dart';
 import 'package:hellodekal/pages/initial_page.dart';
 import 'package:hellodekal/pages/order_preparation_page.dart';
+import 'package:hellodekal/pages/payment_method_page.dart';
 import 'package:hellodekal/pages/profile_page.dart';
 import 'package:hellodekal/pages/search_page.dart';
 import 'package:hellodekal/firebase_options.dart';
@@ -75,7 +76,14 @@ class MyApp extends StatelessWidget {
         '/search': (context) => const SearchPage(),
         '/profile': (context) => const ProfilePage(),
         '/orders': (context) => const CartPage(),
-        '/order_preparation': (context) => const OrderPreparationPage(),
+            '/payment': (context) {
+      final cartTotals = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      return PaymentPage(cartTotals: cartTotals);
+    },
+    '/order_preparation': (context) {
+      final cartTotals = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      return DeliveryProgressPage(cartTotals: cartTotals);
+    },
         '/debit_payment': (context) => const DebitPaymentPage(),
         '/phone-auth': (context) => const CustomerLoginPage(),
         '/delivery_progress': (context) => const DeliveryProgressPage(),

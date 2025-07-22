@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hellodekal/components/my_cart_tile.dart';
+import 'package:hellodekal/models/cart_item.dart';
 import 'package:hellodekal/models/restaurant.dart';
 import 'package:hellodekal/pages/payment_method_page.dart';
 import 'package:provider/provider.dart';
@@ -111,6 +112,48 @@ void _handleCheckout() async {
       ),
     );
   }
+}
+void _removeCartItem(CartItem cartItem) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text("Remove item?"),
+      content: Text("Remove ${cartItem.food.name} from your cart?"),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            "Cancel",
+            style: TextStyle(color: Colors.grey.shade600),
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            // Remove the specific item from cart
+            final restaurant = Provider.of<Restaurant>(context, listen: false);
+            // Remove all quantities of this specific cart item
+            while (restaurant.cart.contains(cartItem)) {
+              restaurant.removeFromCart(cartItem);
+            }
+            
+            // Show confirmation snackbar
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("${cartItem.food.name} removed from cart"),
+                backgroundColor: Colors.orange,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          },
+          child: const Text(
+            "Remove",
+            style: TextStyle(color: Colors.red),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
   void _showTopNotification(BuildContext context, String message) {
@@ -307,7 +350,10 @@ void _handleCheckout() async {
                                 itemCount: userCart.length,
                                 itemBuilder: (context, index) {
                                   final cartItem = userCart[index];
-                                  return MyCartTile(cartItem: cartItem);
+                                  return MyCartTile(
+                                    cartItem: cartItem,
+                                    onRemove: () => _removeCartItem(cartItem),
+                                  );
                                 },
                               ),
                             ),
