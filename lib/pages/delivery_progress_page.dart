@@ -15,18 +15,28 @@ class DeliveryProgressPage extends StatefulWidget {
 class _DeliveryProgressPageState extends State<DeliveryProgressPage> {
   // get access to db
   FirestoreService db = FirestoreService();
+  
+  // Store order items before clearing cart
+  List<dynamic> orderItems = [];
+  int totalItemCount = 0;
 
   @override
   void initState() {
     super.initState();
-    // if we get to this page, submit order to firestore db
-    String receipt = context.read<Restaurant>().displayCartReceipt();
+    
+    // Store the cart items BEFORE clearing the cart
+    final restaurant = context.read<Restaurant>();
+    orderItems = List.from(restaurant.cart); // Copy cart items
+    totalItemCount = restaurant.cart.length;
+    
+    // Submit order to firestore db
+    String receipt = restaurant.displayCartReceipt();
     db.saveOrderToDatabase(receipt);
     
     // Clear the cart after successful order placement
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.read<Restaurant>().clearCart();
+        restaurant.clearCart();
       }
     });
   }
@@ -138,14 +148,14 @@ class _DeliveryProgressPageState extends State<DeliveryProgressPage> {
                   ),
                   const SizedBox(height: 16),
                   
-                  // Order items
+                  // Order items - use stored orderedItems instead of restaurant.cart
                   Consumer<Restaurant>(
                     builder: (context, restaurant, child) {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Cart items
-                          ...restaurant.cart.map((cartItem) {
+                          // Display stored ordered items (from before cart was cleared)
+                          ...orderItems.map((cartItem) {
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 8),
                               child: Row(
@@ -201,7 +211,7 @@ class _DeliveryProgressPageState extends State<DeliveryProgressPage> {
                           ),
                           const SizedBox(height: 8),
                           
-                          // Total
+                          // Total - use stored totalItemsCount
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -214,7 +224,7 @@ class _DeliveryProgressPageState extends State<DeliveryProgressPage> {
                                 ),
                               ),
                               Text(
-                                '${restaurant.cart.length}',
+                                '$totalItemCount', // Use stored count instead of restaurant.cart.length
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
